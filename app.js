@@ -5,7 +5,7 @@
  * - Telegram / ntfy still only fire for watchlist matches
  */
 
-const WORKER_URL = "bse-xml-rss.daksheshpatelin.workers.dev";   // ← change after first deploy
+const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev";   // ← change after first deploy
 
 let watchlist = [];
 let announcements = [];
