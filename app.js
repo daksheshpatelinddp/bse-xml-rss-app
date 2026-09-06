@@ -1,11 +1,11 @@
 /*
- * BSE XML RSS – frontend (V1.0)
+ * BSE XML RSS – frontend (V1.1)
  * - Shows ALL recent announcements from official BSE RSS
  * - Highlights / badges the ones that matched the watchlist (alerts)
  * - Telegram / ntfy still only fire for watchlist matches
  */
 
-const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev";   // ← change after first deploy
+const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev"; // ← keep your real worker URL
 
 let watchlist = [];
 let announcements = [];
