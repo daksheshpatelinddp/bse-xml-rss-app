@@ -1,10 +1,11 @@
 /*
- * BSE XML RSS – frontend (V1.2)
- * - Shows watchlist-matched announcements only (last 50)
- * - Telegram / ntfy fire for watchlist matches
+ * BSE XML RSS – frontend (V1.0)
+ * - Shows ALL recent announcements from official BSE RSS
+ * - Highlights / badges the ones that matched the watchlist (alerts)
+ * - Telegram / ntfy still only fire for watchlist matches
  */
 
-const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev"; // ← keep your real worker URL
+const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev";// ← change after first deploy
 
 let watchlist = [];
 let announcements = [];
@@ -82,29 +83,17 @@ async function loadWatchlist() {
   }
 }
 
-let saveWatchlistTimer = null;
-
 async function saveWatchlist() {
-  renderWatchlist(); // instant UI feedback, unaffected by the debounce below
-
-  // Coalesce rapid successive edits (fast typing + Enter, quick taps,
-  // a big CSV batch) into a single network write. Without this, two
-  // edits landing within the same second can both try to write the
-  // "watchlist" KV key at once — Workers KV only allows 1 write/sec
-  // per key, so the second one gets rejected and silently lost.
-  if (saveWatchlistTimer) clearTimeout(saveWatchlistTimer);
-  saveWatchlistTimer = setTimeout(async () => {
-    saveWatchlistTimer = null;
-    try {
-      await fetch(`${WORKER_URL}/watchlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ watchlist }),
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }, 700);
+  renderWatchlist();
+  try {
+    await fetch(`${WORKER_URL}/watchlist`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ watchlist }),
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 function addWatchlistItem() {
@@ -186,7 +175,7 @@ function renderWatchlist() {
   });
 }
 
-/* ---------- announcements (watchlist matches only, last 50) ---------- */
+/* ---------- announcements (ALL) ---------- */
 
 async function loadAnnouncements() {
   const feedCount = document.getElementById("feedCount");
@@ -205,11 +194,12 @@ async function loadAnnouncements() {
 function renderAnnouncements() {
   const feedCount = document.getElementById("feedCount");
   const results = document.getElementById("results");
-  feedCount.textContent = `${announcements.length} alert${announcements.length === 1 ? "" : "s"}`;
+  const alertCount = announcements.filter((a) => a.alert).length;
+  feedCount.textContent = `${announcements.length} announcement${announcements.length === 1 ? "" : "s"} · ${alertCount} alert${alertCount === 1 ? "" : "s"}`;
 
   if (!announcements.length) {
     results.innerHTML =
-      '<p class="muted empty">No alerts yet. Click “⚡ Check now” to poll BSE RSS. Only announcements matching your watchlist appear here and are sent to Telegram/ntfy.</p>';
+      '<p class="muted empty">No announcements yet. Click “⚡ Check now” to fetch the latest from BSE RSS. Watchlist matches will be marked ALERT and sent to Telegram/ntfy.</p>';
     return;
   }
 
