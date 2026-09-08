@@ -2,7 +2,7 @@
  * BSE XML RSS – frontend (V1.0)
  * - Shows ALL recent announcements from official BSE RSS
  * - Highlights / badges the ones that matched the watchlist (alerts)
- * - Telegram / ntfy still only fire for watchlist matches
+ * - Telegram alerts fire only for watchlist matches
  */
 
 const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev";// ← change after first deploy
@@ -22,7 +22,6 @@ function escapeHtml(str) {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("telegramToggle").addEventListener("change", saveNotificationSettings);
-  document.getElementById("ntfyToggle").addEventListener("change", saveNotificationSettings);
   document.getElementById("refreshBtn").addEventListener("click", () => {
     loadAnnouncements();
     loadWatchlist();
@@ -48,7 +47,6 @@ async function loadNotificationSettings() {
     const data = await res.json();
     const s = data.settings || {};
     document.getElementById("telegramToggle").checked = s.telegram !== false;
-    document.getElementById("ntfyToggle").checked = s.ntfy !== false;
   } catch (err) {
     console.error(err);
   }
@@ -57,7 +55,6 @@ async function loadNotificationSettings() {
 async function saveNotificationSettings() {
   const body = {
     telegram: document.getElementById("telegramToggle").checked,
-    ntfy: document.getElementById("ntfyToggle").checked,
   };
   try {
     await fetch(`${WORKER_URL}/notification-settings`, {
@@ -199,7 +196,7 @@ function renderAnnouncements() {
 
   if (!announcements.length) {
     results.innerHTML =
-      '<p class="muted empty">No announcements yet. Click “⚡ Check now” to fetch the latest from BSE RSS. Watchlist matches will be marked ALERT and sent to Telegram/ntfy.</p>';
+      '<p class="muted empty">No announcements yet. Click “⚡ Check now” to fetch the latest from BSE RSS. Watchlist matches will be marked ALERT and sent to Telegram.</p>';
     return;
   }
 
