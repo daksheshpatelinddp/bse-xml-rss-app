@@ -1,8 +1,7 @@
 /*
- * BSE XML RSS – frontend (V1.0)
- * - Shows ALL recent announcements from official BSE RSS
- * - Highlights / badges the ones that matched the watchlist (alerts)
- * - Telegram alerts fire only for watchlist matches
+ * BSE XML RSS – frontend (V1.1)
+ * - Shows only announcements that matched the watchlist (alerts)
+ * - Telegram alerts fire for the same watchlist matches
  */
 
 const WORKER_URL = "https://bse-xml-rss.daksheshpatelin.workers.dev";// ← change after first deploy
@@ -191,12 +190,11 @@ async function loadAnnouncements() {
 function renderAnnouncements() {
   const feedCount = document.getElementById("feedCount");
   const results = document.getElementById("results");
-  const alertCount = announcements.filter((a) => a.alert).length;
-  feedCount.textContent = `${announcements.length} announcement${announcements.length === 1 ? "" : "s"} · ${alertCount} alert${alertCount === 1 ? "" : "s"}`;
+  feedCount.textContent = `${announcements.length} watchlist alert${announcements.length === 1 ? "" : "s"}`;
 
   if (!announcements.length) {
     results.innerHTML =
-      '<p class="muted empty">No announcements yet. Click “⚡ Check now” to fetch the latest from BSE RSS. Watchlist matches will be marked ALERT and sent to Telegram.</p>';
+      '<p class="muted empty">No alerts yet. Click “⚡ Check now” to poll BSE now, or add scrips to your watchlist. Matches are sent to Telegram too.</p>';
     return;
   }
 
