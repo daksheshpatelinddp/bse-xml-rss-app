@@ -1,18 +1,24 @@
-// Load saved companies from localStorage when the app starts
-function loadWatchlist() {
+// Function to load initial watchlist from backend worker
+async function loadWatchlist() {
+  try {
+    const response = await fetch('/api/watchlist');
+    if (response.ok) {
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    }
+  } catch (error) {
+    console.error('Error fetching watchlist:', error);
+  }
+  
+  // Fallback to localStorage if API request is unavailable
   const storedWatchlist = localStorage.getItem('watchlist');
   return storedWatchlist ? JSON.parse(storedWatchlist) : [];
 }
 
-// Save current list state to localStorage
-function saveWatchlist(list) {
-  localStorage.setItem('watchlist', JSON.stringify(list));
-}
+// Global state array
+let watchlist = [];
 
-// Global watchlist array initialized directly from storage
-let watchlist = loadWatchlist();
-
-// Display items on the screen
+// Function to render saved companies in the UI
 function renderWatchlist() {
   const container = document.getElementById('watchlist-container');
   if (!container) return;
@@ -20,11 +26,11 @@ function renderWatchlist() {
   container.innerHTML = '';
 
   if (watchlist.length === 0) {
-    container.innerHTML = '<p>No companies in watchlist.</p>';
+    container.innerHTML = '<div>No companies in watchlist.</div>';
     return;
   }
 
-  watchlist.forEach((company, index) => {
+  watchlist.forEach((company) => {
     const item = document.createElement('div');
     item.className = 'watchlist-item';
     item.textContent = company;
@@ -32,40 +38,66 @@ function renderWatchlist() {
   });
 }
 
-// Fixed Add Company Function: Reads input field value directly
-function addCompany() {
-  const inputElement = document.getElementById('company-input');
-  if (!inputElement) return;
+// Add company handler: Updates state, localStorage, and sends API request
+async function addCompany() {
+  const input = document.getElementById('company-input');
+  if (!input) return;
 
-  const companyName = inputElement.value.trim();
+  const companyName = input.value.trim();
   if (!companyName) return;
 
-  watchlist.push(companyName);
-  saveWatchlist(watchlist);
+  // Prevent duplicates
+  if (!watchlist.includes(companyName)) {
+    watchlist.push(companyName);
+  }
+
+  // Local storage update
+  localStorage.setItem('watchlist', JSON.stringify(watchlist));
+  input.value = '';
   renderWatchlist();
 
-  inputElement.value = ''; // Reset input field
+  // Network request to Cloudflare Worker backend
+  try {
+    await fetch('/api/watchlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ watchlist })
+    });
+  } catch (error) {
+    console.error('Error saving watchlist to backend:', error);
+  }
 }
 
-// Fixed Clear Watchlist Function
-function clearWatchlist() {
+// Clear watchlist handler: Clears local state and sends clear request
+async function clearWatchlist() {
   watchlist = [];
   localStorage.removeItem('watchlist');
   renderWatchlist();
+
+  // Network request to Cloudflare Worker backend
+  try {
+    await fetch('/api/watchlist', {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error clearing watchlist on backend:', error);
+  }
 }
 
-// Run initial load and setup event listeners once DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  // Render initial items saved in localStorage on first load
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  // Fetch latest state from backend/localStorage
+  watchlist = await loadWatchlist();
   renderWatchlist();
 
-  // Attach button click events safely
+  // Attach button event listeners
   const addButton = document.getElementById('add-btn');
+  const clearButton = document.getElementById('clear-btn');
+
   if (addButton) {
     addButton.addEventListener('click', addCompany);
   }
 
-  const clearButton = document.getElementById('clear-btn');
   if (clearButton) {
     clearButton.addEventListener('click', clearWatchlist);
   }
