@@ -1,29 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BSE RSS Reader & Watchlist</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BSE XML RSS – Alert Monitor</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <header>
-    <h1>BSE RSS Reader</h1>
+  <header class="topbar">
+    <div>
+      <h1>BSE XML RSS</h1>
+      <div class="subtitle">Alert-first monitor · Official BSE RSS (XML)</div>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="refreshBtn" class="btn secondary small">Refresh</button>
+      <button type="button" id="checkNowBtn" class="btn small">⚡ Check now</button>
+    </div>
   </header>
 
-  <main>
-    <section class="controls">
-      <input type="text" id="company-input" placeholder="Enter company name or ticker">
-      <button id="add-btn">Add Company</button>
-      <button id="clear-btn">Clear Watchlist</button>
-    </section>
+  <div class="layout">
+    <!-- Left column: settings + watchlist -->
+    <aside>
+      <section class="card">
+        <h2>Notifications</h2>
+        <label class="toggle-row">
+          <span>Telegram</span>
+          <input type="checkbox" id="telegramToggle" checked />
+        </label>
+        <p class="muted small" style="margin-top:0.75rem">
+          Toggle Telegram alerts. Changes save automatically.
+        </p>
+      </section>
 
-    <section>
-      <h2>Saved Watchlist</h2>
-      <div id="watchlist-container" class="watchlist-container"></div>
-    </section>
-  </main>
+      <section class="card">
+        <h2>Watchlist <span id="watchlistCount" class="muted">(0)</span></h2>
+        <div class="add-row">
+          <input
+            type="text"
+            id="watchInput"
+            placeholder="6-digit scrip or company name"
+            autocomplete="off"
+          />
+          <button type="button" id="addWatchBtn" class="btn small">Add</button>
+        </div>
+        <div class="add-row">
+          <label class="file-label">
+            Upload CSV / TXT
+            <input type="file" id="csvFileInput" accept=".csv,.txt,text/plain" />
+          </label>
+          <button type="button" id="clearWatchlistBtn" class="btn danger small">Clear</button>
+        </div>
+        <div id="whitelistContainer" class="watch-list">
+          <span class="muted">No scrips yet. Add 6-digit code or name.</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right column: alerts -->
+    <main>
+      <div class="content-header">
+        <h2>Recent Announcements</h2>
+        <span id="feedCount" class="muted">—</span>
+      </div>
+      <p id="lastCheckText" class="muted small" style="margin:0 0 0.75rem">Last check: —</p>
+      <div id="results" class="results">
+        <p class="muted empty">No alerts yet. Click “⚡ Check now” to poll BSE now, or add scrips to your watchlist. Matches are sent to Telegram too.</p>
+      </div>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
